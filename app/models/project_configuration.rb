@@ -14,7 +14,9 @@ class ProjectConfiguration < ConfigurationParameter
       'pure_file' => Webistrano::Template::PureFile,
       'unicorn' => Webistrano::Template::Unicorn,
       'Symfony2' => Webistrano::Template::Symfony2,
-      'PHP' => Webistrano::Template::PHP
+      'PHP' => Webistrano::Template::PHP,
+      'wordpress' => Webistrano::Template::Wordpress,
+      'Nette' => Webistrano::Template::Nette
     }
   end
 
