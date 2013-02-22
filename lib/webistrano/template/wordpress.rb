@@ -3,9 +3,8 @@ module Webistrano
     module Wordpress
       
       CONFIG = Webistrano::Template::Rails::CONFIG.dup.merge({
-        :app_symlinks => ["wp-content/uploads"],
-        :app_file_symlinks => ["wp-config.php", "sitemap.xml", "sitemap.xml.qz"],
-        :document_root => "www"
+        :shared_children => "[\"wp-content/uploads\"]",
+        :shared_files => "[\"wp-config.php\", \"sitemap.xml\", \"sitemap.xml.qz\"]",
       }).freeze
       
       DESC = <<-'EOS'
@@ -16,12 +15,29 @@ module Webistrano
         namespace :wordpress do
   
           task :setup, :except => { :no_release => true } do
-            if app_symlinks
-              app_symlinks.each { |link| run "#{try_sudo} mkdir -p #{shared_path}/#{link}" }
+            if shared_children
+              print "--> Creating symlinks for shared directories"
+
+              shared_children.each do |link|
+                run "#{try_sudo} mkdir -p #{shared_path}/#{link}"
+              end
+
+              #capifony_puts_ok
             end
-            if app_file_symlinks
-              app_file_symlinks.each { |link| run "#{try_sudo} touch #{shared_path}/#{link} && chmod 777 #{shared_path}/#{link}" }
-            end
+
+            if shared_files
+              print "--> Creating symlinks for shared files"
+
+              shared_files.each do |link|
+                link_dir = File.dirname("#{shared_path}/#{link}")
+                run "#{try_sudo} mkdir -p #{link_dir}"
+                run "#{try_sudo} touch #{shared_path}/#{link}"
+              end
+
+              #capifony_puts_ok
+            end  
+
+
           end
 
           desc <<-DESC
@@ -34,18 +50,30 @@ module Webistrano
           task :finalize_update, :except => { :no_release => true } do    
             run "chmod -R g+w #{latest_release}" if fetch(:group_writable, true)
             
-            if app_symlinks
-              # Remove the contents of the shared directories if they were deployed from SCM
-              app_symlinks.each { |link| run "#{try_sudo} rm -rf #{latest_release}/#{document_root}/#{link}" }
-              # Add symlinks the directoris in the shared location
-              app_symlinks.each { |link| run "#{try_sudo} ln -nfs #{shared_path}/#{link} #{latest_release}/#{document_root}/#{link}" }
+
+            if shared_children
+              print "--> Creating symlinks for shared directories"
+
+              shared_children.each do |link|
+                run "#{try_sudo} mkdir -p #{shared_path}/#{link}"
+                run "#{try_sudo} sh -c 'if [ -d #{release_path}/#{link} ] ; then rm -rf #{release_path}/#{link}; fi'"
+                run "#{try_sudo} ln -nfs #{shared_path}/#{link} #{release_path}/#{link}"
+              end
+
+              #capifony_puts_ok
             end
-            
-            if app_file_symlinks
-              # Remove the contents of the shared directories if they were deployed from SCM
-              app_file_symlinks.each { |link| run "#{try_sudo} rm -rf #{latest_release}/#{document_root}/#{link}" }
-              # Add symlinks the directoris in the shared location
-              app_file_symlinks.each { |link| run "#{try_sudo} ln -s #{shared_path}/#{link} #{latest_release}/#{document_root}/#{link}" }
+
+            if shared_files
+              print "--> Creating symlinks for shared files"
+
+              shared_files.each do |link|
+                link_dir = File.dirname("#{shared_path}/#{link}")
+                run "#{try_sudo} mkdir -p #{link_dir}"
+                run "#{try_sudo} touch #{shared_path}/#{link}"
+                run "#{try_sudo} ln -nfs #{shared_path}/#{link} #{release_path}/#{link}"
+              end
+
+              #capifony_puts_ok
             end
           end  
         end
