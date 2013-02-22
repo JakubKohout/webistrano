@@ -12,7 +12,7 @@ module Webistrano
       EOS
       
       TASKS = Webistrano::Template::Base::TASKS + <<-'EOS'
-        namespace :wordpress do
+        namespace :deploy  do
   
           task :setup, :except => { :no_release => true } do
             if shared_children
