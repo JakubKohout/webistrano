@@ -14,31 +14,7 @@ module Webistrano
       TASKS = Webistrano::Template::Base::TASKS + <<-'EOS'
         namespace :deploy  do
   
-          task :setup, :except => { :no_release => true } do
-            if shared_children
-              print "--> Creating symlinks for shared directories"
 
-              shared_children.each do |link|
-                run "#{try_sudo} mkdir -p #{shared_path}/#{link}"
-              end
-
-              #capifony_puts_ok
-            end
-
-            if shared_files
-              print "--> Creating symlinks for shared files"
-
-              shared_files.each do |link|
-                link_dir = File.dirname("#{shared_path}/#{link}")
-                run "#{try_sudo} mkdir -p #{shared_path}/#{link_dir}"
-                run "#{try_sudo} touch #{shared_path}/#{link}"
-              end
-
-              #capifony_puts_ok
-            end  
-
-
-          end
 
           desc <<-DESC
             Touches up the released code. This is called by update_code \
@@ -75,6 +51,36 @@ module Webistrano
             end
           end  
         end
+
+
+        namespace :wordpress do
+          task :setup, :except => { :no_release => true } do
+            if shared_children
+              print "--> Creating symlinks for shared directories"
+
+              shared_children.each do |link|
+                run "#{try_sudo} mkdir -p #{shared_path}/#{link}"
+              end
+
+              #capifony_puts_ok
+            end
+
+            if shared_files
+              print "--> Creating symlinks for shared files"
+
+              shared_files.each do |link|
+                link_dir = File.dirname("#{shared_path}/#{link}")
+                run "#{try_sudo} mkdir -p #{shared_path}/#{link_dir}"
+                run "#{try_sudo} touch #{shared_path}/#{link}"
+              end
+
+              #capifony_puts_ok
+            end  
+          end
+
+        end
+
+
       EOS
       
     end
