@@ -2,17 +2,14 @@ module Webistrano
   module Template
     module Base
       CONFIG = {
-        :application => 'your_app_name',
-        :scm => 'subversion',
-        :deploy_via => ':checkout',
-        :scm_username => 'your_SVN_user',
-        :scm_password => 'your_SVN_password',
-        :user => 'deployment_user(SSH login)',
-        :password => 'deployment_user(SSH user) password',
-        :runner => 'user to run as with sudo',
-        :use_sudo => 'true',
-        :deploy_to => '/path/to/deployment_base',
-        :repository => 'https://svn.example.com/project/trunk'
+        :application => "Project name",
+        :deploy_to => "/home/www/Project/domain/",
+        :deploy_via => ":checkout",
+        :repository => "git@dev.eastbiz.com:project.git",
+        :scm => ":git",
+        :ssh_keys => "/home/webistrano/.ssh/id_rsa",
+        :user => "Project",
+        :use_sudo => "false"
       }.freeze
       
       DESC = <<-'EOS'
