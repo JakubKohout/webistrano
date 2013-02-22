@@ -3,8 +3,8 @@ module Webistrano
     module Wordpress
       
       CONFIG = Webistrano::Template::Rails::CONFIG.dup.merge({
-        :app_symlinks => ["wp-content/uploads"]
-        :app_file_symlinks => ["wp-config.php", "sitemap.xml", "sitemap.xml.qz"]
+        :app_symlinks => ["wp-content/uploads"],
+        :app_file_symlinks => ["wp-config.php", "sitemap.xml", "sitemap.xml.qz"],
         :document_root => "www"
       }).freeze
       
