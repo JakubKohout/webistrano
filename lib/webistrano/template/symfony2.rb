@@ -9,7 +9,7 @@ module Webistrano
         :remote_tmp_dir => '/tmp',
         :app_path => "app",
         :web_path => "web",
-        :app_config_file => "/app/config/config.neon",
+        :app_config_file => "parameters.yml",
         :update_assets_version => false,
         :clear_controllers => true,
         :use_composer => true,
