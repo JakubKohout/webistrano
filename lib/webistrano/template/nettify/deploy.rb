@@ -1,8 +1,8 @@
 # Overrided Capistrano tasks
 namespace :deploy do
   desc <<-DESC
-    Sets permissions for writable_dirs folders as described in the Symfony documentation
-    (http://symfony.com/doc/master/book/installation.html#configuration-and-setup)
+    Sets permissions for writable_dirs folders as described in the nette documentation
+    (http://nette.com/doc/master/book/installation.html#configuration-and-setup)
   DESC
   task :set_permissions, :roles => :app, :except => { :no_release => true } do
     if writable_dirs && permission_method
@@ -31,7 +31,7 @@ namespace :deploy do
       }
 
       if methods[permission_method]
-        capifony_pretty_print "--> Setting permissions"
+        nettify_pretty_print "--> Setting permissions"
 
         if fetch(:use_sudo, false)
           methods[permission_method].each do |cmd|
@@ -51,7 +51,7 @@ namespace :deploy do
             end
           end
         end
-        capifony_puts_ok
+        nettify_puts_ok
       else
         puts "    Permission method '#{permission_method}' does not exist.".yellow
       end
@@ -61,7 +61,7 @@ namespace :deploy do
   desc "Symlinks static directories and static files that need to remain between deployments"
   task :share_childs, :roles => :app, :except => { :no_release => true } do
     if shared_children
-      capifony_pretty_print "--> Creating symlinks for shared directories"
+      nettify_pretty_print "--> Creating symlinks for shared directories"
 
       shared_children.each do |link|
         run "#{try_sudo} mkdir -p #{shared_path}/#{link}"
@@ -69,11 +69,11 @@ namespace :deploy do
         run "#{try_sudo} ln -nfs #{shared_path}/#{link} #{release_path}/#{link}"
       end
 
-      capifony_puts_ok
+      nettify_puts_ok
     end
 
     if shared_files
-      capifony_pretty_print "--> Creating symlinks for shared files"
+      nettify_pretty_print "--> Creating symlinks for shared files"
 
       shared_files.each do |link|
         link_dir = File.dirname("#{shared_path}/#{link}")
@@ -82,7 +82,7 @@ namespace :deploy do
         run "#{try_sudo} ln -nfs #{shared_path}/#{link} #{release_path}/#{link}"
       end
 
-      capifony_puts_ok
+      nettify_puts_ok
     end
   end
 
@@ -90,13 +90,13 @@ namespace :deploy do
   task :finalize_update, :roles => :app, :except => { :no_release => true } do
     run "#{try_sudo} chmod -R g+w #{latest_release}" if fetch(:group_writable, true)
 
-    capifony_pretty_print "--> Creating cache directory"
+    nettify_pretty_print "--> Creating cache directory"
 
     run "#{try_sudo} sh -c 'if [ -d #{latest_release}/#{cache_path} ] ; then rm -rf #{latest_release}/#{cache_path}; fi'"
     run "#{try_sudo} sh -c 'mkdir -p #{latest_release}/#{cache_path} && chmod -R 0777 #{latest_release}/#{cache_path}'"
     run "#{try_sudo} chmod -R g+w #{latest_release}/#{cache_path}"
 
-    capifony_puts_ok
+    nettify_puts_ok
 
     share_childs
 
@@ -107,10 +107,10 @@ namespace :deploy do
       if asset_paths.chomp.empty?
         puts "    No asset paths found, skipped".yellow
       else
-        capifony_pretty_print "--> Normalizing asset timestamps"
+        nettify_pretty_print "--> Normalizing asset timestamps"
 
         run "#{try_sudo} find #{asset_paths} -exec touch -t #{stamp} {} ';' &> /dev/null || true", :env => { "TZ" => "UTC" }
-        capifony_puts_ok
+        nettify_puts_ok
       end
     end
   end
@@ -131,10 +131,10 @@ namespace :deploy do
     run "#{try_sudo} sh -c 'cd #{latest_release} && phpunit -c #{app_path} src'"
   end
 
-  desc "Runs the Symfony2 migrations"
+  desc "Runs the nette2 migrations"
   task :migrate, :roles => :app, :except => { :no_release => true }, :only => { :primary => true } do
     if model_manager == "doctrine"
-      symfony.doctrine.migrations.migrate
+      nette.doctrine.migrations.migrate
     else
       if model_manager == "propel"
         puts "    Propel doesn't have built-in migration for now".yellow
