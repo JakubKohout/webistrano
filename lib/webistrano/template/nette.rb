@@ -1,259 +1,225 @@
 module Webistrano
-  module Template
-    module Nette
+	module Template
+		module Nette
 
-      CONFIG = Webistrano::Template::BasePHP::CONFIG.dup.merge({
-        :symfony_env_local => 'dev',
-        :symfony_env_prod => 'prod',
-        :php_bin => '/usr/bin/php',
-        :remote_tmp_dir => '/tmp',
-        :app_path => "app",
-        :web_path => "web",
-        :app_config_file => "parameters.yml",
-        :update_assets_version => false,
-        :clear_controllers => true,
-        :use_composer => true,
-        :copy_vendors => true,
-        :dump_assetic_assets => true,
-        :assets_symlinks => true,
-        :update_assets_version => true,
-        :clear_controllers => true,
-        :permission_method => :acl,
-        :use_set_permissions => true
-      }).freeze
+			CONFIG = Webistrano::Template::BasePHP::CONFIG.dup.merge({
+				:php_bin => '/usr/bin/php',
+				:remote_tmp_dir => '/tmp',
+				:app_path => "app",
+				:web_path => "web",
+				:app_config_file => "parameters.yml",
+				:use_composer => true,
+				:shared_children => "[\"temp\",\"log\"]",
+				:shared_files => "[\"app/config/local.neon\"]"
+			}).freeze
 
-      DESC = <<-'EOS'
-        Template to use for Symfony2 project to deploy with capifony.
-      EOS
+			DESC = <<-'EOS'
+				Template to use for Nette project deploy
+			EOS
 
-      # load all capifony Symfony2 tasks
-      task = ""
-      capifony = [ "capifony", "symfony2/symfony", "symfony2/database", "symfony2/deploy", "symfony2/doctrine", "symfony2/propel", "symfony2/web" ]
-      capifony.each {|import|
-        task = task + File.open("lib/webistrano/template/capifony/lib/#{import}.rb", "rb").read
-      }
+			# load all netiffy nette2 tasks
+			task = ""
+			nettify = [ "netiffy", "nettify/nette", "nettify/deploy", "nettify/doctrine", "nettify/web" ]
+			netiffy.each {|import|
+				task = task + File.open("lib/webistrano/template/netiffy/#{import}.rb", "rb").read
+			}
 
-      capifony_symfony2 = <<-'EOS'
+			nettify_tasks = <<-'EOS'
 
-        set :local_cache_path, "/var/deploys/#{webistrano_project}/"
-        set :local_cache, "#{local_cache_path}/#{webistrano_stage}"
+				set :maintenance_basename, 'maintenance'
 
-        set :maintenance_basename, 'maintenance'
+				# nette application path
+				set :app_path,              "app"
 
-        # Symfony application path
-        set :app_path,              "app"
+				# nette web path
+				set :web_path,              "web"
 
-        # Symfony web path
-        set :web_path,              "web"
+				# nette console bin
+				set :nette_console,       web + "/index.php"
 
-        # Symfony console bin
-        set :symfony_console,       app_path + "/console"
+				# nette log path
+				set :log_path,              app_path + "/logs"
 
-        # Symfony log path
-        set :log_path,              app_path + "/logs"
+				# nette cache path
+				set :cache_path,            app_path + "/cache"
 
-        # Symfony cache path
-        set :cache_path,            app_path + "/cache"
+				# nette config file path
+				set :app_config_path,       app_path + "/config"
 
-        # Symfony config file path
-        set :app_config_path,       app_path + "/config"
+				# nette config file (parameters.(ini|yml|etc...)
+				set :app_config_file,       "parameters.yml"
 
-        # Symfony config file (parameters.(ini|yml|etc...)
-        set :app_config_file,       "parameters.yml"
+				# nette bin vendors
+				set :nette_vendors,       "bin/vendors"
 
-        # Symfony bin vendors
-        set :symfony_vendors,       "bin/vendors"
+				# nette build_bootstrap script
+				set :build_bootstrap,       "bin/build_bootstrap"
 
-        # Symfony build_bootstrap script
-        set :build_bootstrap,       "bin/build_bootstrap"
+				# Whether to use composer to install vendors.
+				# If set to false, it will use the bin/vendors script
+				set :use_composer,          true
 
-        # Whether to use composer to install vendors.
-        # If set to false, it will use the bin/vendors script
-        set :use_composer,          true
+				# Path to composer binary
+				# If set to false, nettify will download/install composer
+				set :composer_bin,          false
 
-        # Path to composer binary
-        # If set to false, Capifony will download/install composer
-        set :composer_bin,          false
+				# Options to pass to composer when installing/updating
+				set :composer_options,      "--no-scripts --verbose --prefer-dist"
 
-        # Options to pass to composer when installing/updating
-        set :composer_options,      "--no-scripts --verbose --prefer-dist"
+				# Whether to update vendors using the configured dependency manager (composer or bin/vendors)
+				set :update_vendors,        false
 
-        # Whether to update vendors using the configured dependency manager (composer or bin/vendors)
-        set :update_vendors,        false
+				# run bin/vendors script in mode (upgrade, install (faster if shared /vendor folder) or reinstall)
+				set :vendors_mode,          "reinstall"
 
-        # run bin/vendors script in mode (upgrade, install (faster if shared /vendor folder) or reinstall)
-        set :vendors_mode,          "reinstall"
+				# Copy vendors from previous release
+				set :copy_vendors,          true
 
-        # Copy vendors from previous release
-        set :copy_vendors,          true
+				# Whether to run cache warmup
+				set :cache_warmup,          true
 
-        # Whether to run cache warmup
-        set :cache_warmup,          true
+				# Files that need to remain the same between deploys
+				set :shared_files,          false
 
-        # Use AsseticBundle
-        set :dump_assetic_assets,   true
+				# Dirs that need to remain the same between deploys (shared dirs)
+				set :shared_children,       [log_path]
 
-        # Assets install
-        set :assets_install,        true
-        set :assets_symlinks,       true
-        set :assets_relative,       false
+				# Asset folders (that need to be timestamped)
+				set :asset_children,        [web_path + "/css", web_path + "/images", web_path + "/js"]
 
-        # Controllers to clear
-        set :controllers_to_clear, ['app_*.php']
+				# Dirs that need to be writable by the HTTP Server (i.e. cache, log dirs)
+				set :writable_dirs,         [log_path, cache_path]
 
-        # Files that need to remain the same between deploys
-        set :shared_files,          false
+				# Name used by the Web Server (i.e. www-data for Apache)
+				set :webserver_user,        "www-data"
 
-        # Dirs that need to remain the same between deploys (shared dirs)
-        set :shared_children,       [log_path]
+				# Method used to set permissions (:chmod, :acl, or :chown)
+				set :permission_method,     :acl
 
-        # Asset folders (that need to be timestamped)
-        set :asset_children,        [web_path + "/css", web_path + "/images", web_path + "/js"]
+				# Execute set permissions
+				set :use_set_permissions,   true
 
-        # Dirs that need to be writable by the HTTP Server (i.e. cache, log dirs)
-        set :writable_dirs,         [log_path, cache_path]
+				# Model manager: (doctrine, propel)
+				set :model_manager,         "doctrine"
 
-        # Name used by the Web Server (i.e. www-data for Apache)
-        set :webserver_user,        "www-data"
+				# If set to false, it will never ask for confirmations (migrations task for instance)
+				# Use it carefully, really!
+				set :interactive_mode,      false
 
-        # Method used to set permissions (:chmod, :acl, or :chown)
-        set :permission_method,     :acl
+				def load_database_config(data, env)
+					nettify_fail;
+					#read_parameters(data)['parameters']
+				end
 
-        # Execute set permissions
-        set :use_set_permissions,   true
+				def read_parameters(data)
+					if '.ini' === File.extname(app_config_file) then
+						File.readable?(data) ? IniFile::load(data) : IniFile.new(data)
+					else
+						YAML::load(data)
+					end
+				end
 
-        # Model manager: (doctrine, propel)
-        set :model_manager,         "doctrine"
+				def guess_nette_version
+					capture("cd #{latest_release} && #{php_bin} #{nette_console} --version |cut -d \" \" -f 3")
+				end
 
-        # Symfony2 version
-        set :symfony_version,           2
+				def remote_file_exists?(full_path)
+					'true' == capture("if [ -e #{full_path} ]; then echo 'true'; fi").strip
+				end
 
-        # If set to false, it will never ask for confirmations (migrations task for instance)
-        # Use it carefully, really!
-        set :interactive_mode,      false
+				def remote_command_exists?(command)
+					'true' == capture("if [ -x \"$(which #{command})\" ]; then echo 'true'; fi").strip
+				end
 
-        def load_database_config(data, env)
-          read_parameters(data)['parameters']
-        end
+				STDOUT.sync
+				$error = false
+				$pretty_errors_defined = false
 
-        def read_parameters(data)
-          if '.ini' === File.extname(app_config_file) then
-            File.readable?(data) ? IniFile::load(data) : IniFile.new(data)
-          else
-            YAML::load(data)
-          end
-        end
+				# Be less verbose by default
+				#logger.level = Capistrano::Logger::IMPORTANT
 
-        def guess_symfony_version
-          capture("cd #{latest_release} && #{php_bin} #{symfony_console} --version |cut -d \" \" -f 3")
-        end
+				def nettify_pretty_print(msg)
+						logger.info msg
+				end
 
-        def remote_file_exists?(full_path)
-          'true' == capture("if [ -e #{full_path} ]; then echo 'true'; fi").strip
-        end
+				def nettify_puts_ok
+					logger.info 'ok'.green
 
-        def remote_command_exists?(command)
-          'true' == capture("if [ -x \"$(which #{command})\" ]; then echo 'true'; fi").strip
-        end
+					$error = false
+				end
 
-        STDOUT.sync
-        $error = false
-        $pretty_errors_defined = false
+				def nettify_fail
+					logger.info 'Fail'.red;
 
-        # Be less verbose by default
-        #logger.level = Capistrano::Logger::IMPORTANT
+					$error = true;
+				end
 
-        def capifony_pretty_print(msg)
-            logger.info msg
-        end
 
-        def capifony_puts_ok
-          logger.info 'ok'.green
+				["nette:composer:install", "nette:composer:update"].each do |action|
+					before action do
+						if copy_vendors
+							nette.composer.copy_vendors
+						end
+					end
+				end
 
-          $error = false
-        end
+				after "deploy:finalize_update" do
+					if use_composer
+						if update_vendors
+							nette.composer.update
+						else
+							nette.composer.install
+						end
+					else
+						if update_vendors
+							vendors_mode.chomp # To remove trailing whiteline
+							case vendors_mode
+							when "upgrade" then nette.vendors.upgrade
+							when "install" then nette.vendors.install
+							when "reinstall" then nette.vendors.reinstall
+							end
+						end
+					end
 
-        ["symfony:composer:install", "symfony:composer:update"].each do |action|
-          before action do
-            if copy_vendors
-              symfony.composer.copy_vendors
-            end
-          end
-        end
+					nette.bootstrap.build
 
-        after "deploy:finalize_update" do
-          if use_composer
-            if update_vendors
-              symfony.composer.update
-            else
-              symfony.composer.install
-            end
-          else
-            if update_vendors
-              vendors_mode.chomp # To remove trailing whiteline
-              case vendors_mode
-              when "upgrade" then symfony.vendors.upgrade
-              when "install" then symfony.vendors.install
-              when "reinstall" then symfony.vendors.reinstall
-              end
-            end
-          end
+					if use_set_permissions
+						nette.deploy.set_permissions
+					end
 
-          symfony.bootstrap.build
+					if use_composer
+						nette.composer.dump_autoload
+					end
 
-          if use_set_permissions
-            symfony.deploy.set_permissions
-          end
+					if cache_warmup
+						nette.cache.warmup            # Warmup clean cache
+					end
 
-          if model_manager == "propel"
-            symfony.propel.build.model
-          end
+					if clear_controllers
+						# If clear_controllers is an array set controllers_to_clear,
+						# else use the default value 'app_*.php'
+						if clear_controllers.is_a? Array
+							set(:controllers_to_clear) { clear_controllers }
+						end
+						nette.project.clear_controllers
+					end
+				end
 
-          if use_composer
-            symfony.composer.dump_autoload
-          end
+				before "deploy:update_code" do
+					msg = "--> Updating code base with #{deploy_via} strategy"
+					logger.info msg
+					#sudo "mkdir -p #{local_cache_path}"
+					#sudo "chown -R #{user} #{local_cache_path}"
+				end
 
-          if assets_install
-            symfony.assets.install          # Publish bundle assets
-          end
+				after "deploy:create_symlink" do
+					logger.info "--> Successfully deployed!".green
+				end
 
-          if update_assets_version
-            symfony.assets.update_version   # Update `assets_version`
-          end
+			EOS
 
-          if cache_warmup
-            symfony.cache.warmup            # Warmup clean cache
-          end
+			TASKS = Webistrano::Template::Base::TASKS + nettify_tasks + task
 
-          if dump_assetic_assets
-            symfony.assetic.dump            # Dump assetic assets
-          end
-
-          if clear_controllers
-            # If clear_controllers is an array set controllers_to_clear,
-            # else use the default value 'app_*.php'
-            if clear_controllers.is_a? Array
-              set(:controllers_to_clear) { clear_controllers }
-            end
-            symfony.project.clear_controllers
-          end
-        end
-
-        before "deploy:update_code" do
-          msg = "--> Updating code base with #{deploy_via} strategy"
-          logger.info msg
-          #sudo "mkdir -p #{local_cache_path}"
-          #sudo "chown -R #{user} #{local_cache_path}"
-        end
-
-        after "deploy:create_symlink" do
-          logger.info "--> Successfully deployed!".green
-        end
-
-      EOS
-
-      TASKS = Webistrano::Template::Base::TASKS + capifony_symfony2 + task
-
-    end
-  end
+		end
+	end
 end
