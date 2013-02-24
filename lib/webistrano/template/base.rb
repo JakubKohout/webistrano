@@ -2,14 +2,15 @@ module Webistrano
   module Template
     module Base
       CONFIG = {
-        :application => "Project name",
-        :deploy_to => "/home/www/Project/domain/",
+        :application => "%PROJECT NAME%",
+        :deploy_to => "/home/www/%PROJECT NAME%/%DOMAIN NAME%/",
         :deploy_via => ":checkout",
-        :repository => "git@dev.eastbiz.com:project.git",
+        :repository => "git@dev.eastbiz.com:%PROJECT NAME%.git",
         :scm => ":git",
         :ssh_keys => "/home/webistrano/.ssh/id_rsa",
-        :user => "Project",
-        :use_sudo => "false"
+        :user => "%PROJECT NAME%",
+        :use_sudo => "false",
+        :branch => "master"
       }.freeze
       
       DESC = <<-'EOS'

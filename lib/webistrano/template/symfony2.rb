@@ -5,7 +5,6 @@ module Webistrano
       CONFIG = Webistrano::Template::BasePHP::CONFIG.dup.merge({
         :symfony_env_local => 'dev',
         :symfony_env_prod => 'prod',
-        :php_bin => '/usr/bin/php',
         :remote_tmp_dir => '/tmp',
         :app_path => "app",
         :web_path => "web",

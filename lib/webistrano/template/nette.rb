@@ -3,11 +3,10 @@ module Webistrano
 		module Nette
 
 			CONFIG = Webistrano::Template::BasePHP::CONFIG.dup.merge({
-				:php_bin => '/usr/bin/php',
-				:remote_tmp_dir => '/tmp',
+				:remote_tmp_dir => 'temp',
 				:app_path => "app",
-				:web_path => "web",
-				:app_config_file => "parameters.yml",
+				:web_path => "www",
+				:app_config_file => "app/config/local.neon",
 				:use_composer => true,
 				:shared_children => "[\"temp\",\"log\"]",
 				:shared_files => "[\"app/config/local.neon\"]"
@@ -32,31 +31,31 @@ module Webistrano
 
         set :maintenance_basename, 'maintenance'
 
-        # Symfony application path
+        # Nette application path
         set :app_path,              "app"
 
-        # Symfony web path
+        # Nette web path
         set :web_path,              "web"
 
-        # Symfony console bin
-        set :symfony_console,       app_path + "/console"
+        # Nette console bin
+        set :nette_console,       app_path + "/console"
 
-        # Symfony log path
+        # Nette log path
         set :log_path,              app_path + "/logs"
 
-        # Symfony cache path
+        # Nette cache path
         set :cache_path,            app_path + "/cache"
 
-        # Symfony config file path
+        # Nette config file path
         set :app_config_path,       app_path + "/config"
 
-        # Symfony config file (parameters.(ini|yml|etc...)
+        # Nette config file (parameters.(ini|yml|etc...)
         set :app_config_file,       "parameters.yml"
 
-        # Symfony bin vendors
-        set :symfony_vendors,       "bin/vendors"
+        # Nette bin vendors
+        set :nette_vendors,         "bin/vendors"
 
-        # Symfony build_bootstrap script
+        # Nette build_bootstrap script
         set :build_bootstrap,       "bin/build_bootstrap"
 
         # Whether to use composer to install vendors.
@@ -64,7 +63,7 @@ module Webistrano
         set :use_composer,          true
 
         # Path to composer binary
-        # If set to false, Capifony will download/install composer
+        # If set to false, Nettify will download/install composer
         set :composer_bin,          false
 
         # Options to pass to composer when installing/updating
@@ -82,25 +81,11 @@ module Webistrano
         # Whether to run cache warmup
         set :cache_warmup,          true
 
-        # Use AsseticBundle
-        set :dump_assetic_assets,   true
-
-        # Assets install
-        set :assets_install,        true
-        set :assets_symlinks,       true
-        set :assets_relative,       false
-
-        # Controllers to clear
-        set :controllers_to_clear, ['app_*.php']
-
         # Files that need to remain the same between deploys
         set :shared_files,          false
 
         # Dirs that need to remain the same between deploys (shared dirs)
         set :shared_children,       [log_path]
-
-        # Asset folders (that need to be timestamped)
-        set :asset_children,        [web_path + "/css", web_path + "/images", web_path + "/js"]
 
         # Dirs that need to be writable by the HTTP Server (i.e. cache, log dirs)
         set :writable_dirs,         [log_path, cache_path]
@@ -108,24 +93,15 @@ module Webistrano
         # Name used by the Web Server (i.e. www-data for Apache)
         set :webserver_user,        "www-data"
 
-        # Method used to set permissions (:chmod, :acl, or :chown)
-        set :permission_method,     :acl
-
-        # Execute set permissions
-        set :use_set_permissions,   true
-
         # Model manager: (doctrine, propel)
         set :model_manager,         "doctrine"
-
-        # Symfony2 version
-        set :symfony_version,           2
 
         # If set to false, it will never ask for confirmations (migrations task for instance)
         # Use it carefully, really!
         set :interactive_mode,      false
 
         def load_database_config(data, env)
-          read_parameters(data)['parameters']
+          #read_parameters(data)['parameters']
         end
 
         def read_parameters(data)
@@ -134,10 +110,6 @@ module Webistrano
           else
             YAML::load(data)
           end
-        end
-
-        def guess_symfony_version
-          capture("cd #{latest_release} && #{php_bin} #{symfony_console} --version |cut -d \" \" -f 3")
         end
 
         def remote_file_exists?(full_path)
@@ -155,20 +127,20 @@ module Webistrano
         # Be less verbose by default
         #logger.level = Capistrano::Logger::IMPORTANT
 
-        def capifony_pretty_print(msg)
+        def nettify_pretty_print(msg)
             logger.info msg
         end
 
-        def capifony_puts_ok
+        def nettify_puts_ok
           logger.info 'ok'.green
 
           $error = false
         end
 
-        ["symfony:composer:install", "symfony:composer:update"].each do |action|
+        ["nette:composer:install", "nette:composer:update"].each do |action|
           before action do
             if copy_vendors
-              symfony.composer.copy_vendors
+              nette.composer.copy_vendors
             end
           end
         end
@@ -176,49 +148,49 @@ module Webistrano
         after "deploy:finalize_update" do
           if use_composer
             if update_vendors
-              symfony.composer.update
+              nette.composer.update
             else
-              symfony.composer.install
+              nette.composer.install
             end
           else
             if update_vendors
               vendors_mode.chomp # To remove trailing whiteline
               case vendors_mode
-              when "upgrade" then symfony.vendors.upgrade
-              when "install" then symfony.vendors.install
-              when "reinstall" then symfony.vendors.reinstall
+              when "upgrade" then nette.vendors.upgrade
+              when "install" then nette.vendors.install
+              when "reinstall" then nette.vendors.reinstall
               end
             end
           end
 
-          symfony.bootstrap.build
+          nette.bootstrap.build
 
           if use_set_permissions
-            symfony.deploy.set_permissions
+            nette.deploy.set_permissions
           end
 
           if model_manager == "propel"
-            symfony.propel.build.model
+            nette.propel.build.model
           end
 
           if use_composer
-            symfony.composer.dump_autoload
+            nette.composer.dump_autoload
           end
 
           if assets_install
-            symfony.assets.install          # Publish bundle assets
+            nette.assets.install          # Publish bundle assets
           end
 
           if update_assets_version
-            symfony.assets.update_version   # Update `assets_version`
+            nette.assets.update_version   # Update `assets_version`
           end
 
           if cache_warmup
-            symfony.cache.warmup            # Warmup clean cache
+            nette.cache.warmup            # Warmup clean cache
           end
 
           if dump_assetic_assets
-            symfony.assetic.dump            # Dump assetic assets
+            nette.assetic.dump            # Dump assetic assets
           end
 
           if clear_controllers
@@ -227,7 +199,7 @@ module Webistrano
             if clear_controllers.is_a? Array
               set(:controllers_to_clear) { clear_controllers }
             end
-            symfony.project.clear_controllers
+            nette.project.clear_controllers
           end
         end
 

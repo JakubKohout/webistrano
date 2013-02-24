@@ -1,18 +1,9 @@
 module Webistrano
   module Template
     module BasePHP
-      CONFIG = {
-        :application => 'your_app_name',
-        :scm => 'git',
-        :deploy_via => ':rsync_with_remote_cache',
-        :user => 'deployment_user(SSH login)',
-        :password => 'deployment_user(SSH user) password',
-        :use_sudo => 'false',
-        :deploy_to => '/path/to/deployment_base',
-        :repository => 'https://svn.example.com/project/trunk',
-        :user => 'On the remote server(s)',
-        :branch => 'master'
-      }.freeze
+      CONFIG = Webistrano::Template::Base::CONFIG.dup.merge({
+        :php_bin => '/usr/bin/php'
+      }).freeze
 
       DESC = <<-'EOS'
         Base template that the other templates use to inherit from.
