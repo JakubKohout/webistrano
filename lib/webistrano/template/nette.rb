@@ -19,10 +19,11 @@ module Webistrano
 
 			# load all netiffy nette2 tasks
 			task = ""
-			nettify = [ 'deploy']
-			netiffy.each {|import|
-				task = task + File.open("lib/webistrano/template/netiffy/#{import}.rb", "rb").read
-			}
+			nettify = ["deploy"]
+
+      nettify.each{ |fileName|
+        task = task + IO.read("lib/webistrano/template/nettify/" + fileName + ".rb");
+      }
 
       nettify_tasks = <<-'EOS'
 
