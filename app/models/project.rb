@@ -12,7 +12,7 @@ class Project < ActiveRecord::Base
 
   after_create :create_template_defaults
 
-  attr_accessible :name, :description, :template, :archived
+  attr_accessible :name, :description, :template, :archived, :domain
 
   after_initialize :init
 
@@ -29,6 +29,11 @@ class Project < ActiveRecord::Base
         if k.to_sym == :application
           config.value = self.name.gsub(/[^0-9a-zA-Z]/,"_").underscore
         end
+
+        project_name_sanitized = self.name.gsub(/[^0-9a-zA-Z]/,"_").underscore;
+        config.value = config.value.gsub("%PROJECT NAME%",project_name_sanitized);
+        config.value = config.value.gsub("%DOMAIN NAME%",self.domain);
+
         config.save!
       end
     end

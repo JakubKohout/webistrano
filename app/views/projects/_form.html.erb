@@ -4,6 +4,10 @@
   <%= text_field 'project', 'name', :style =>'width:330px;' %>
 </p>
 <p>
+  <b>Domain</b><br />
+  <%= text_field 'project', 'domain', :style =>'width:330px;' %>
+</p>
+<p>
   <b>Project Type</b><br />
   <%= select('project', 'template', @templates, { :include_blank => false }) %>
 </p>
