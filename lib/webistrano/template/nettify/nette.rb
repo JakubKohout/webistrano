@@ -61,9 +61,9 @@ namespace :nette do
 
     desc "Updates composer"
     task :self_update, :roles => :app, :except => { :no_release => true } do
-      nettify_pretty_print "--> Updating Composer"
-      run "#{try_sudo} sh -c 'cd #{latest_release} && #{composer_bin} self-update'"
-      nettify_puts_ok
+      #nettify_pretty_print "--> Updating Composer"
+      #run "#{try_sudo} bash --login  -c 'cd #{latest_release} && #{composer_bin} self-update'"
+      #nettify_puts_ok
     end
 
     desc "Runs composer to install vendors from composer.lock file"
@@ -76,7 +76,7 @@ namespace :nette do
       end
 
       nettify_pretty_print "--> Installing Composer dependencies"
-      run "#{try_sudo} sh -c 'cd #{latest_release} && #{composer_bin} install #{composer_options}'"
+      run "#{try_sudo} bash --login  -c 'cd #{latest_release} && #{composer_bin} install #{composer_options}'"
       nettify_puts_ok
     end
 
@@ -90,7 +90,7 @@ namespace :nette do
       end
 
       nettify_pretty_print "--> Updating Composer dependencies"
-      run "#{try_sudo} sh -c 'cd #{latest_release} && #{composer_bin} update #{composer_options}'"
+      run "#{try_sudo} bash --login  -c 'cd #{latest_release} && #{composer_bin} update #{composer_options}'"
       nettify_puts_ok
     end
 
@@ -104,7 +104,7 @@ namespace :nette do
       end
 
       nettify_pretty_print "--> Dumping an optimized autoloader"
-      run "#{try_sudo} sh -c 'cd #{latest_release} && #{composer_bin} dump-autoload --optimize'"
+      run "#{try_sudo} bash --login  -c 'cd #{latest_release} && #{composer_bin} dump-autoload --optimize'"
       nettify_puts_ok
     end
 

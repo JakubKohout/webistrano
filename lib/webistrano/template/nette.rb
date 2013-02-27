@@ -9,7 +9,8 @@ module Webistrano
 				:app_config_file => "app/config/local.neon",
 				:use_composer => true,
 				:shared_children => "[\"temp\",\"log\"]",
-				:shared_files => "[\"app/config/local.neon\"]"
+				:shared_files => "[\"app/config/local.neon\"]",
+        :nette_console => "www/index.php"
 			}).freeze
 
 			DESC = <<-'EOS'
@@ -18,13 +19,15 @@ module Webistrano
 
 			# load all netiffy nette2 tasks
 			task = ""
-			nettify = ["deploy"]
+			nettify = ["deploy","nette","doctrine"]
 
       nettify.each{ |fileName|
         task = task + IO.read("lib/webistrano/template/nettify/" + fileName + ".rb");
       }
 
       nettify_tasks = <<-'EOS'
+
+        set :nette_env_prod, 'production'
 
         set :local_cache_path, "/var/deploys/#{webistrano_project}/"
         set :local_cache, "#{local_cache_path}/#{webistrano_stage}"
@@ -36,9 +39,6 @@ module Webistrano
 
         # Nette web path
         set :web_path,              "web"
-
-        # Nette console bin
-        set :nette_console,       app_path + "/console"
 
         # Nette log path
         set :log_path,              app_path + "/logs"
@@ -64,7 +64,7 @@ module Webistrano
 
         # Path to composer binary
         # If set to false, Nettify will download/install composer
-        set :composer_bin,          false
+        set :composer_bin,          'composer'
 
         # Options to pass to composer when installing/updating
         set :composer_options,      "--no-scripts --verbose --prefer-dist"
@@ -105,11 +105,11 @@ module Webistrano
         end
 
         def read_parameters(data)
-          if '.ini' === File.extname(app_config_file) then
-            File.readable?(data) ? IniFile::load(data) : IniFile.new(data)
-          else
-            YAML::load(data)
-          end
+          #if '.ini' === File.extname(app_config_file) then
+          #  File.readable?(data) ? IniFile::load(data) : IniFile.new(data)
+          #else
+          #  YAML::load(data)
+          #end
         end
 
         def remote_file_exists?(full_path)
@@ -140,7 +140,7 @@ module Webistrano
         ["nette:composer:install", "nette:composer:update"].each do |action|
           before action do
             if copy_vendors
-              nette.composer.copy_vendors
+              nette.composer.copy_vendors 
             end
           end
         end
@@ -154,53 +154,26 @@ module Webistrano
             end
           else
             if update_vendors
-              vendors_mode.chomp # To remove trailing whiteline
-              case vendors_mode
-              when "upgrade" then nette.vendors.upgrade
-              when "install" then nette.vendors.install
-              when "reinstall" then nette.vendors.reinstall
-              end
+              #vendors_mode.chomp # To remove trailing whiteline
+              #case vendors_mode
+              #when "upgrade" then nette.vendors.upgrade
+              #when "install" then nette.vendors.install
+              #when "reinstall" then nette.vendors.reinstall
+              #end
             end
           end
 
-          nette.bootstrap.build
+          #nette.bootstrap.build
 
-          if use_set_permissions
-            nette.deploy.set_permissions
-          end
-
-          if model_manager == "propel"
-            nette.propel.build.model
-          end
 
           if use_composer
-            nette.composer.dump_autoload
-          end
-
-          if assets_install
-            nette.assets.install          # Publish bundle assets
-          end
-
-          if update_assets_version
-            nette.assets.update_version   # Update `assets_version`
+            #nette.composer.dump_autoload
           end
 
           if cache_warmup
-            nette.cache.warmup            # Warmup clean cache
+            #nette.cache.warmup            # Warmup clean cache
           end
 
-          if dump_assetic_assets
-            nette.assetic.dump            # Dump assetic assets
-          end
-
-          if clear_controllers
-            # If clear_controllers is an array set controllers_to_clear,
-            # else use the default value 'app_*.php'
-            if clear_controllers.is_a? Array
-              set(:controllers_to_clear) { clear_controllers }
-            end
-            nette.project.clear_controllers
-          end
         end
 
         before "deploy:update_code" do

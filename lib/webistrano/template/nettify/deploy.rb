@@ -99,20 +99,6 @@ namespace :deploy do
     nettify_puts_ok
 
     share_childs
-
-    if fetch(:normalize_asset_timestamps, true)
-      stamp = Time.now.utc.strftime("%Y%m%d%H%M.%S")
-      asset_paths = asset_children.map { |p| "#{latest_release}/#{p}" }.join(" ")
-
-      if asset_paths.chomp.empty?
-        puts "    No asset paths found, skipped".yellow
-      else
-        nettify_pretty_print "--> Normalizing asset timestamps"
-
-        run "#{try_sudo} find #{asset_paths} -exec touch -t #{stamp} {} ';' &> /dev/null || true", :env => { "TZ" => "UTC" }
-        nettify_puts_ok
-      end
-    end
   end
 
   desc <<-DESC
@@ -131,14 +117,10 @@ namespace :deploy do
     run "#{try_sudo} sh -c 'cd #{latest_release} && phpunit -c #{app_path} src'"
   end
 
-  desc "Runs the nette2 migrations"
+  desc "Runs the doctrin 2 migrations"
   task :migrate, :roles => :app, :except => { :no_release => true }, :only => { :primary => true } do
     if model_manager == "doctrine"
-      nette.doctrine.migrations.migrate
-    else
-      if model_manager == "propel"
-        puts "    Propel doesn't have built-in migration for now".yellow
-      end
+      #nette.doctrine.migrations.migrate
     end
   end
 
