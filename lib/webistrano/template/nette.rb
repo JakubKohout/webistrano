@@ -58,10 +58,6 @@ module Webistrano
         # Nette build_bootstrap script
         set :build_bootstrap,       "bin/build_bootstrap"
 
-        # Whether to use composer to install vendors.
-        # If set to false, it will use the bin/vendors script
-        set :use_composer,          true
-
         # Path to composer binary
         # If set to false, Nettify will download/install composer
         set :composer_bin,          'composer'
@@ -80,12 +76,6 @@ module Webistrano
 
         # Whether to run cache warmup
         set :cache_warmup,          true
-
-        # Files that need to remain the same between deploys
-        set :shared_files,          false
-
-        # Dirs that need to remain the same between deploys (shared dirs)
-        set :shared_children,       [log_path]
 
         # Dirs that need to be writable by the HTTP Server (i.e. cache, log dirs)
         set :writable_dirs,         [log_path, cache_path]
