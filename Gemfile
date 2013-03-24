@@ -15,6 +15,8 @@ gem "thin"
 gem "capistrano_rsync_with_remote_cache"
 gem "colored"
 gem "unicorn"
+gem "newrelic_rpm"
+
 
 group :test do
   gem "mocha", "0.9.8"
