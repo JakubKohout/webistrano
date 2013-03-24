@@ -10,7 +10,8 @@ module Webistrano
         :ssh_keys => "/home/webistrano/.ssh/id_rsa",
         :user => "%PROJECT NAME%",
         :use_sudo => "false",
-        :branch => "master"
+        :branch => "master",
+        :newrelic_appname => "%DOMAIN NAME%"
       }.freeze
       
       DESC = <<-'EOS'
@@ -20,6 +21,10 @@ module Webistrano
       EOS
       
       TASKS =  <<-'EOS'
+
+        require 'new_relic/recipes'
+        after "deploy:update", "newrelic:notice_deployment"
+
         # allocate a pty by default as some systems have problems without
         default_run_options[:pty] = true
       
