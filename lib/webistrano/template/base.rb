@@ -11,7 +11,8 @@ module Webistrano
         :user => "%PROJECT NAME%",
         :use_sudo => "false",
         :branch => "master",
-        :newrelic_appname => "%DOMAIN NAME%"
+        :newrelic_appname => "%DOMAIN NAME%",
+        :web_path => "www"
       }.freeze
       
       DESC = <<-'EOS'
@@ -24,6 +25,14 @@ module Webistrano
 
         require 'new_relic/recipes'
         after "deploy:update", "newrelic:notice_deployment"
+
+        before "newrelic:notice_deployment" do
+          run <<-EOB
+                echo -e " <IfModule mod_php5.c> \\n
+                            php_value newrelic.appname "#{newrelic_appname}" \\n
+                          </IfModule> " >> #{latest_release}/#{web_path}.htaccess
+              EOB
+        end
 
         # allocate a pty by default as some systems have problems without
         default_run_options[:pty] = true
