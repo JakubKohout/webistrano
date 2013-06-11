@@ -244,7 +244,7 @@ module Webistrano
     def set_project_and_stage_names(config)
       config.set(:webistrano_project, deployment.stage.project.webistrano_project_name)
       config.set(:webistrano_stage, deployment.stage.webistrano_stage_name)
-      config.set(:newrelic_user, deployment.user.login)
+      config.set(:newrelic_user, deployment.user.login) if !deployment.user.nil?
     end
 
     # casts a given string to the correct Ruby value
