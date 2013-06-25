@@ -30,7 +30,7 @@ module Webistrano
           run <<-EOB
                 echo -e " <IfModule mod_php5.c> \\n
                             php_value newrelic.appname "#{newrelic_appname}" \\n
-                          </IfModule> " >> #{latest_release}/#{web_path}.htaccess
+                          </IfModule> " >> #{latest_release}/#{web_path}/.htaccess
               EOB
         end
 
