@@ -15,6 +15,18 @@ module Webistrano
         # allocate a pty by default as some systems have problems without
         default_run_options[:pty] = true
 
+        require 'new_relic/recipes'
+        after "deploy:update", "newrelic:notice_deployment"
+
+        before "newrelic:notice_deployment" do
+          run <<-EOB
+                echo -e " <IfModule mod_php5.c> \\n
+                            php_value newrelic.appname "#{newrelic_appname}" \\n
+                          </IfModule> " >> #{latest_release}/#{web_path}/.htaccess
+              EOB
+        end
+
+
         # set Net::SSH ssh options through normal variables
         # at the moment only one SSH key is supported as arrays are not
         # parsed correctly by Webistrano::Deployer.type_cast (they end up as strings)

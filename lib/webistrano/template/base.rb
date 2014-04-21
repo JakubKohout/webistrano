@@ -5,7 +5,7 @@ module Webistrano
         :application => "%PROJECT NAME%",
         :deploy_to => "/home/www/%PROJECT NAME%/%DOMAIN NAME%/",
         :deploy_via => ":checkout",
-        :repository => "git@dev.eastbiz.com:%PROJECT NAME%.git",
+        :repository => "git@example.com:%PROJECT NAME%.git",
         :scm => ":git",
         :ssh_keys => "/home/webistrano/.ssh/id_rsa",
         :user => "%PROJECT NAME%",
@@ -22,17 +22,6 @@ module Webistrano
       EOS
       
       TASKS =  <<-'EOS'
-
-        require 'new_relic/recipes'
-        after "deploy:update", "newrelic:notice_deployment"
-
-        before "newrelic:notice_deployment" do
-          run <<-EOB
-                echo -e " <IfModule mod_php5.c> \\n
-                            php_value newrelic.appname "#{newrelic_appname}" \\n
-                          </IfModule> " >> #{latest_release}/#{web_path}/.htaccess
-              EOB
-        end
 
         # allocate a pty by default as some systems have problems without
         default_run_options[:pty] = true
