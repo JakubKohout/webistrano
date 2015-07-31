@@ -3,26 +3,35 @@ module Webistrano
     module PHP
 
       CONFIG = Webistrano::Template::BasePHP::CONFIG.dup.merge({
-        :clear_cache_dirs => [],
-        :environment => "dev, prod, test",
-        :filters => ["jpegoptim","csstidy","yuijs","yuicss"],
-        :git_enable_submodules => false,
-        :restart_apache => true,
-        :shared_dirs => [],
+        :shared_children => [],
+        :shared_files => [],
         :deploy_to => '/path/to/deployment_base',
+        :use_composer => true
       }).freeze
 
       DESC = <<-'EOS'
         Template for use with PHP projects
       EOS
 
-      task = ""
-      recipe = [ "compress", "deploy" ]
+      tasks = <<-'EOS'
+        # Composer bin file
+        set :composer_bin,          'composer'
+
+        # Options to pass to composer when installing/updating
+        set :composer_options,      "--no-scripts --verbose --prefer-dist"
+
+        after "deploy:finalize_update" do
+          if use_composer
+              composer.install
+          end
+        end
+      EOS
+      recipe = [ "deploy", "composer" ]
       recipe.each {|import|
-        task = task + File.open("lib/webistrano/template/php/#{import}.rb", "rb").read
+        tasks = tasks + File.open("lib/webistrano/template/php/#{import}.rb", "rb").read
       }
 
-      TASKS = Webistrano::Template::Base::TASKS + task
+      TASKS = Webistrano::Template::Base::TASKS + tasks
 
     end
   end
