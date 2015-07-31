@@ -16,7 +16,8 @@ class ProjectConfiguration < ConfigurationParameter
       'Symfony2' => Webistrano::Template::Symfony2,
       'PHP' => Webistrano::Template::PHP,
       'wordpress' => Webistrano::Template::Wordpress,
-      'Nette' => Webistrano::Template::Nette
+      'Nette' => Webistrano::Template::Nette,
+      'Phing' => Webistrano::Template::Phing
     }
   end
 
